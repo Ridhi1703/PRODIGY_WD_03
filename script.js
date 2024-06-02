@@ -118,7 +118,7 @@ const COMPUTER = 1;
 
         function playTurn(row, col) {
             if (gboard[row][col] !== '*' || gameOver(gboard)) return;
-
+        
             gboard[row][col] = HUMANMOVE;
             showBoard(gboard);
             maxIn++;
@@ -131,22 +131,25 @@ const COMPUTER = 1;
                 document.getElementById('popup').classList.remove('hide');
                 return;
             }
-
-            let n = bestWay(gboard);
-            let x = Math.floor(n / SIDE);
-            let y = n % SIDE;
-            gboard[x][y] = COMPUTERMOVE;
-            showBoard(gboard);
-            maxIn++;
-            if (gameOver(gboard)) {
-                declareWinner(COMPUTER);
-                return;
-            }
-            if (maxIn === SIDE * SIDE) {
-                document.getElementById('message').innerText = "It's a draw!";
-                document.getElementById('popup').classList.remove('hide');
-                return;
-            }
+        
+            // Human's move is done, simulate delay for computer's turn
+            setTimeout(function () {
+                let n = bestWay(gboard);
+                let x = Math.floor(n / SIDE);
+                let y = n % SIDE;
+                gboard[x][y] = COMPUTERMOVE;
+                showBoard(gboard);
+                maxIn++;
+                if (gameOver(gboard)) {
+                    declareWinner(COMPUTER);
+                    return;
+                }
+                if (maxIn === SIDE * SIDE) {
+                    document.getElementById('message').innerText = "It's a draw!";
+                    document.getElementById('popup').classList.remove('hide');
+                    return;
+                }
+            }, 1000); // Adjust the delay time as needed (in milliseconds)
         }
 
         function resetGame() {
