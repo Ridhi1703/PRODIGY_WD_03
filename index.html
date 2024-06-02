@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>   <div class="container-main">
+        <div class="heading">
+            <h2>TIC<br>TAC<br>TOE</h2>
+        </div>
+        <div class="box-main">
+            <div class="wrapper">
+                <div class="container">
+                    <button class="button-option" onclick="playTurn(0, 0)"></button>
+                    <button class="button-option" onclick="playTurn(0, 1)"></button>
+                    <button class="button-option" onclick="playTurn(0, 2)"></button>
+                    <button class="button-option" onclick="playTurn(1, 0)"></button>
+                    <button class="button-option" onclick="playTurn(1, 1)"></button>
+                    <button class="button-option" onclick="playTurn(1, 2)"></button>
+                    <button class="button-option" onclick="playTurn(2, 0)"></button>
+                    <button class="button-option" onclick="playTurn(2, 1)"></button>
+                    <button class="button-option" onclick="playTurn(2, 2)"></button>
+                </div>
+                <button id="restart" onclick="resetGame()">Restart</button>
+            </div>
+        </div>
+    </div>
+    <div class="popup hide" id="popup">
+        <p id="message">Sample Message</p>
+        <button id="new-game" onclick="resetGame()">New Game</button>
+    </div>
+<div class="popup hide" id="popup">
+    <p id="message">Sample Message</p>
+    <button id="new-game" onclick="resetGame()">New Game</button>
+</div>
+    <script>
+        const COMPUTER = 1;
+        const HUMAN = 2;
+        const SIDE = 3;
+        const COMPUTERMOVE = 'O';
+        const HUMANMOVE = 'X';
+
+        let gboard = Array(SIDE).fill().map(() => Array(SIDE).fill('*'));
+        let maxIn = 0;
+        let whoseTurn = HUMAN;
+
+        function initialize(gboard) {
+            for (let i = 0; i < SIDE; i++) {
+                for (let j = 0; j < SIDE; j++) {
+                    gboard[i][j] = '*';
+                    document.getElementsByClassName('button-option')[i * SIDE + j].innerText = '';
+                }
+            }
+            maxIn = 0;
+        }
+
+        function showBoard(gboard) {
+            for (let i = 0; i < SIDE; i++) {
+                for (let j = 0; j < SIDE; j++) {
+                    document.getElementsByClassName('button-option')[i * SIDE + j].innerText = gboard[i][j] === '*' ? '' : gboard[i][j];
+                }
+            }
+        }
+
+        function columnCross(gboard) {
+            for (let i = 0; i < SIDE; i++) {
+                if (gboard[0][i] === gboard[1][i] && gboard[1][i] === gboard[2][i] && gboard[0][i] !== '*') {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function rowCrossed(gboard) {
+            for (let i = 0; i < SIDE; i++) {
+                if (gboard[i][0] === gboard[i][1] && gboard[i][1] === gboard[i][2] && gboard[i][0] !== '*') {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function diagonalCross(gboard) {
+            if ((gboard[0][0] === gboard[1][1] && gboard[1][1] === gboard[2][2] && gboard[0][0] !== '*') ||
+                (gboard[0][2] === gboard[1][1] && gboard[1][1] === gboard[2][0] && gboard[0][2] !== '*')) {
+                return true;
+            }
+            return false;
+        }
+
+        function gameOver(gboard) {
+            return rowCrossed(gboard) || columnCross(gboard) || diagonalCross(gboard);
+        }
+
+        function minimax(gboard, depth, isPlay) {
+            if (gameOver(gboard)) {
+                return isPlay ? -10 : 10;
+            }
+            if (depth === SIDE * SIDE) {
+                return 0;
+            }
+
+            let bestScore = isPlay ? -1000 : 1000;
+            for (let i = 0; i < SIDE; i++) {
+                for (let j = 0; j < SIDE; j++) {
+                    if (gboard[i][j] === '*') {
+                        gboard[i][j] = isPlay ? COMPUTERMOVE : HUMANMOVE;
+                        let currentScore = minimax(gboard, depth + 1, !isPlay);
+                        gboard[i][j] = '*';
+                        if (isPlay) {
+                            bestScore = Math.max(bestScore, currentScore);
+                        } else {
+                            bestScore = Math.min(bestScore, currentScore);
+                        }
+                    }
+                }
+            }
+            return bestScore;
+        }
+
+        function bestWay(gboard) {
+            let bestScore = -1000;
+            let move = { x: -1, y: -1 };
+
+            for (let i = 0; i < SIDE; i++) {
+                for (let j = 0; j < SIDE; j++) {
+                    if (gboard[i][j] === '*') {
+                        gboard[i][j] = COMPUTERMOVE;
+                        let score = minimax(gboard, 0, false);
+                        gboard[i][j] = '*';
+                        if (score > bestScore) {
+                            bestScore = score;
+                            move = { x: i, y: j };
+                        }
+                    }
+                }
+            }
+            return move.x * SIDE + move.y;
+        }
+
+        function declareWinner(whoseTurn) {
+            let message = whoseTurn === COMPUTER ? "COMPUTER has won!" : "YOU won!";
+            document.getElementById('message').innerText = message;
+            document.getElementById('popup').classList.remove('hide');
+        }
+
+        function playTurn(row, col) {
+            if (gboard[row][col] !== '*' || gameOver(gboard)) return;
+
+            gboard[row][col] = HUMANMOVE;
+            showBoard(gboard);
+            maxIn++;
+            if (gameOver(gboard)) {
+                declareWinner(HUMAN);
+                return;
+            }
+            if (maxIn === SIDE * SIDE) {
+                document.getElementById('message').innerText = "It's a draw!";
+                document.getElementById('popup').classList.remove('hide');
+                return;
+            }
+
+            let n = bestWay(gboard);
+            let x = Math.floor(n / SIDE);
+            let y = n % SIDE;
+            gboard[x][y] = COMPUTERMOVE;
+            showBoard(gboard);
+            maxIn++;
+            if (gameOver(gboard)) {
+                declareWinner(COMPUTER);
+                return;
+            }
+            if (maxIn === SIDE * SIDE) {
+                document.getElementById('message').innerText = "It's a draw!";
+                document.getElementById('popup').classList.remove('hide');
+                return;
+            }
+        }
+
+        function resetGame() {
+            initialize(gboard);
+            whoseTurn = HUMAN;
+            document.getElementById('popup').classList.add('hide');
+            document.getElementById('message').innerText = '';
+        }
+
+        initialize(gboard);
+    </script>
+</body>
+</html>
