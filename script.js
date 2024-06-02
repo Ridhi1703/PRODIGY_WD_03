@@ -58,12 +58,12 @@ const COMPUTER = 1;
 
         function minimax(gboard, depth, isPlay) {
             if (gameOver(gboard)) {
-                return isPlay ? -10 : 10;
+                return isPlay ? -10 + depth : 10 - depth;
             }
             if (depth === SIDE * SIDE) {
                 return 0;
             }
-
+        
             let bestScore = isPlay ? -1000 : 1000;
             for (let i = 0; i < SIDE; i++) {
                 for (let j = 0; j < SIDE; j++) {
@@ -103,10 +103,18 @@ const COMPUTER = 1;
         }
 
         function declareWinner(whoseTurn) {
-            let message = whoseTurn === COMPUTER ? "COMPUTER has won!" : "YOU won!";
+            let message = '';
+            if (whoseTurn === COMPUTER) {
+                message = "COMPUTER has won!";
+            } else if (whoseTurn === HUMAN) {
+                message = "YOU won!";
+            } else {
+                message = "It's a draw!";
+            }
             document.getElementById('message').innerText = message;
             document.getElementById('popup').classList.remove('hide');
         }
+        
 
         function playTurn(row, col) {
             if (gboard[row][col] !== '*' || gameOver(gboard)) return;
